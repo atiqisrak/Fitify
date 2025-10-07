@@ -70,8 +70,8 @@ const StartScreen: React.FC<StartScreenProps> = ({ onModelFinalized }) => {
     <div className="w-full">
       {/* Logo Header */}
       <div className="w-full flex justify-center pt-6 pb-4">
-        <div className="flex items-center gap-2">
-          <img src="/Fitify.svg" alt="Fitify Logo" className="w-28 h-8 md:w-10 md:h-10" />
+        <div className="absolute top-6 gap-2">
+          <img src="/Fitify.svg" alt="Fitify Logo" className="w-28 h-8 md:w-64 md:h-26" />
           {/* <h1 className="text-3xl md:text-4xl font-serif font-bold tracking-wide text-gray-900">
             Fitify
           </h1> */}
