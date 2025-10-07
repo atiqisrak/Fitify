@@ -3,16 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import React from 'react';
-import { ShirtIcon } from './icons';
 
 const Header: React.FC = () => {
   return (
-    <header className="w-full py-5 px-4 md:px-8 bg-white sticky top-0 z-40">
-      <div className="flex items-center gap-3">
-          <ShirtIcon className="w-6 h-6 text-gray-700" />
-          <h1 className="text-2xl font-serif tracking-widest text-gray-800">
-            Fitify
-          </h1>
+    <header className="w-full py-3 md:py-4 px-4 md:px-8 bg-white/80 backdrop-blur-md border-b border-gray-200/60 absolute top-0 left-0 right-0 z-40">
+      <div className="flex items-center justify-center gap-2">
+          <img src="/Fitify.svg" alt="Fitify Logo" className="w-28 h-6 md:w-7 md:h-7" />
       </div>
     </header>
   );
