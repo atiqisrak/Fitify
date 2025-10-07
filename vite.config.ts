@@ -4,6 +4,8 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
+    const isProduction = mode === 'production';
+    
     return {
       server: {
         port: 3000,
@@ -18,6 +20,17 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
-      }
+      },
+      esbuild: {
+        drop: isProduction ? ['console', 'debugger'] : [],
+      },
+      build: {
+        minify: 'esbuild',
+        rollupOptions: {
+          output: {
+            manualChunks: undefined,
+          },
+        },
+      },
     };
 });

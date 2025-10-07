@@ -1,42 +1,76 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
-*/
+ */
 
-import React, { useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { UploadCloudIcon, CoinIcon } from './icons';
-import { Compare } from './ui/compare';
-import { generateModelImage } from '../services/geminiService';
-import Spinner from './Spinner';
-import { getFriendlyErrorMessage } from '../lib/utils';
-import { coinService } from '../services/coinService';
-import CoinModal from './CoinModal';
+import React, { useState, useCallback } from "react";
+import { AnimatePresence } from "framer-motion";
+import { CoinIcon } from "./icons";
+import { coinService } from "../services/coinService";
+import CoinModal from "./CoinModal";
+import HeroScreen from "./screens/HeroScreen";
+import RegistrationForm from "./screens/RegistrationForm";
+import UploadScreen from "./screens/UploadScreen";
+import PreviewScreen from "./screens/PreviewScreen";
 
 interface StartScreenProps {
   onModelFinalized: (modelUrl: string) => void;
 }
 
 const StartScreen: React.FC<StartScreenProps> = ({ onModelFinalized }) => {
+  const [currentStep, setCurrentStep] = useState<
+    "hero" | "form" | "upload" | "preview"
+  >("hero");
+  const [userData, setUserData] = useState<{
+    name: string;
+    email: string;
+  } | null>(null);
+  const [isSubmittingForm, setIsSubmittingForm] = useState(false);
   const [userImageUrl, setUserImageUrl] = useState<string | null>(null);
-  const [generatedModelUrl, setGeneratedModelUrl] = useState<string | null>(null);
+  const [generatedModelUrl, setGeneratedModelUrl] = useState<string | null>(
+    null
+  );
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCoinModal, setShowCoinModal] = useState(false);
   const [currentCoins, setCurrentCoins] = useState(coinService.getCoins());
 
+  const submitUserData = async (name: string, email: string) => {
+    // Placeholder - will be configured with actual endpoint later
+    try {
+      // const response = await fetch("/api/user-register", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({ name, email }),
+      // });
+
+      // if (!response.ok) {
+      //   throw new Error("Failed to register user");
+      // }
+
+      // return await response.json();
+      // TODO: Implement API call when endpoint is ready
+      return { success: true, name, email };
+    } catch (err) {
+      throw err;
+    }
+  };
+
   const handleFileSelect = useCallback(async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-        setError('Please select an image file.');
-        return;
+    if (!file.type.startsWith("image/")) {
+      setError("Please select an image file.");
+      return;
     }
 
     const reader = new FileReader();
     reader.onload = async (e) => {
-        const dataUrl = e.target?.result as string;
-        setUserImageUrl(dataUrl);
-        setGeneratedModelUrl(dataUrl); // Use original image directly
-        setError(null);
+      const dataUrl = e.target?.result as string;
+      setUserImageUrl(dataUrl);
+      setGeneratedModelUrl(dataUrl); // Use original image directly
+      setError(null);
+      setCurrentStep("preview");
     };
     reader.readAsDataURL(file);
   }, []);
@@ -48,6 +82,8 @@ const StartScreen: React.FC<StartScreenProps> = ({ onModelFinalized }) => {
   };
 
   const reset = () => {
+    setCurrentStep("hero");
+    setUserData(null);
     setUserImageUrl(null);
     setGeneratedModelUrl(null);
     setIsGenerating(false);
@@ -55,17 +91,36 @@ const StartScreen: React.FC<StartScreenProps> = ({ onModelFinalized }) => {
     setCurrentCoins(coinService.getCoins());
   };
 
-  const screenVariants = {
-    initial: { opacity: 0, x: -20 },
-    animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: 20 },
+  const handleFormSubmit = async (name: string, email: string) => {
+    if (!name || !email) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    setIsSubmittingForm(true);
+    setError(null);
+
+    try {
+      await submitUserData(name, email);
+      setUserData({ name, email });
+      setCurrentStep("upload");
+    } catch (err) {
+      setError("Failed to register. Please try again.");
+    } finally {
+      setIsSubmittingForm(false);
+    }
   };
 
   return (
     <div className="w-full">
-      <CoinModal 
-        isOpen={showCoinModal} 
-        onClose={() => setShowCoinModal(false)} 
+      <CoinModal
+        isOpen={showCoinModal}
+        onClose={() => setShowCoinModal(false)}
         currentCoins={currentCoins}
       />
       {/* Floating Coin Display */}
@@ -75,127 +130,60 @@ const StartScreen: React.FC<StartScreenProps> = ({ onModelFinalized }) => {
         aria-label="View coins"
       >
         <CoinIcon className="w-7 h-7 md:w-8 md:h-8 drop-shadow-lg" />
-        <span className="text-lg md:text-xl font-bold text-gray-800 drop-shadow-sm">{currentCoins}</span>
+        <span className="text-lg md:text-xl font-bold text-gray-800 drop-shadow-sm">
+          {currentCoins}
+        </span>
       </button>
       {/* Logo Header */}
       <div className="w-full flex justify-center pt-6 pb-4">
         <div className="absolute top-6 gap-2">
-          <img src="/Fitify.svg" alt="Fitify Logo" className="w-28 h-8 md:w-64 md:h-26" />
-          {/* <h1 className="text-3xl md:text-4xl font-serif font-bold tracking-wide text-gray-900">
-            Fitify
-          </h1> */}
+          <img
+            src="/Fitify.svg"
+            alt="Fitify Logo"
+            className="w-28 h-8 md:w-64 md:h-26"
+          />
         </div>
       </div>
-      
-      <AnimatePresence mode="wait">
-        {!userImageUrl ? (
-          <motion.div
-            key="uploader"
-            className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12 mt-12 md:mt-0"
-            variants={screenVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            transition={{ duration: 0.4, ease: "easeInOut" }}
-          >
-            <div className="lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left">
-              <div className="max-w-lg">
-                <h2 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 leading-tight">
-                  Try On Any Look Instantly.
-                </h2>
-              <p className="mt-4 text-lg text-gray-600">
-                Ever wondered how an outfit would look on you? Upload your photo and explore our wardrobe. Use the Magic button to transform your look with AI.
-              </p>
-              <hr className="my-8 border-gray-200" />
-              <div className="flex flex-col items-center lg:items-start w-full gap-3">
-                <label htmlFor="image-upload-start" className="w-full relative flex items-center justify-center px-8 py-3 text-base font-semibold text-white bg-gray-900 rounded-md cursor-pointer group hover:bg-gray-700 transition-colors">
-                  <UploadCloudIcon className="w-5 h-5 mr-3" />
-                  Upload Photo
-                </label>
-                <input id="image-upload-start" type="file" className="hidden" accept="image/png, image/jpeg, image/webp, image/avif, image/heic, image/heif" onChange={handleFileChange} />
-                <p className="text-gray-500 text-sm">Select a clear, full-body photo. Face-only photos also work, but full-body is preferred for best results.</p>
-                <p className="text-gray-500 text-xs mt-1">By uploading, you agree not to create harmful, explicit, or unlawful content. This service is for creative and responsible use only.</p>
-                {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-              </div>
-            </div>
-          </div>
-          <div className="w-full lg:w-1/2 flex flex-col items-center justify-center">
-            <Compare
-              firstImage={`${import.meta.env.VITE_MEDIA_URL}atiqisrak.png`}
-              secondImage={`${import.meta.env.VITE_MEDIA_URL}atiq-transformed.png`}
-              slideMode="drag"
-              className="w-full max-w-sm aspect-[2/3] rounded-2xl bg-gray-200"
-            />
-          </div>
-        </motion.div>
-      ) : (
-        <motion.div
-          key="compare"
-          className="w-full max-w-6xl mx-auto h-full flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12"
-          variants={screenVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          transition={{ duration: 0.4, ease: "easeInOut" }}
-        >
-          <div className="md:w-1/2 flex-shrink-0 flex flex-col items-center md:items-start">
-            <div className="text-center md:text-left">
-              <h2 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 leading-tight">
-                Ready to Style
-              </h2>
-              <p className="mt-2 text-md text-gray-600">
-                Your photo is uploaded. Let's try on some outfits!
-              </p>
-            </div>
 
-            {error && 
-              <div className="text-center md:text-left text-red-600 max-w-md mt-6">
-                <p className="font-semibold">Upload Failed</p>
-                <p className="text-sm mb-4">{error}</p>
-                <button onClick={reset} className="text-sm font-semibold text-gray-700 hover:underline">Try Again</button>
-              </div>
-            }
-            
-            <AnimatePresence>
-              {generatedModelUrl && !error && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  transition={{ duration: 0.5 }}
-                  className="flex flex-col sm:flex-row items-center gap-4 mt-8"
-                >
-                  <button 
-                    onClick={reset}
-                    className="w-full sm:w-auto px-6 py-3 text-base font-semibold text-gray-700 bg-gray-200 rounded-md cursor-pointer hover:bg-gray-300 transition-colors"
-                  >
-                    Use Different Photo
-                  </button>
-                  <button 
-                    onClick={() => onModelFinalized(generatedModelUrl)}
-                    className="w-full sm:w-auto relative inline-flex items-center justify-center px-8 py-3 text-base font-semibold text-white bg-gray-900 rounded-md cursor-pointer group hover:bg-gray-700 transition-colors"
-                  >
-                    Start Styling &rarr;
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-          <div className="md:w-1/2 w-full flex items-center justify-center">
-            <div 
-              className={`relative rounded-[1.25rem] transition-all duration-700 ease-in-out ${isGenerating ? 'border border-gray-300 animate-pulse' : 'border border-transparent'}`}
-            >
-              <Compare
-                firstImage={userImageUrl}
-                secondImage={generatedModelUrl ?? userImageUrl}
-                slideMode="drag"
-                className="w-[280px] h-[420px] sm:w-[320px] sm:h-[480px] lg:w-[400px] lg:h-[600px] rounded-2xl bg-gray-200"
-              />
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+      <AnimatePresence mode="wait">
+        {currentStep === "hero" && (
+          <HeroScreen onGetStarted={() => setCurrentStep("form")} />
+        )}
+
+        {currentStep === "form" && (
+          <RegistrationForm
+            onSubmit={handleFormSubmit}
+            onBack={() => {
+              setCurrentStep("hero");
+              setError(null);
+            }}
+            error={error}
+            isSubmitting={isSubmittingForm}
+          />
+        )}
+
+        {currentStep === "upload" && (
+          <UploadScreen
+            onFileSelect={handleFileChange}
+            onBack={() => {
+              setCurrentStep("form");
+              setError(null);
+            }}
+            error={error}
+          />
+        )}
+
+        {currentStep === "preview" && userImageUrl && generatedModelUrl && (
+          <PreviewScreen
+            userImageUrl={userImageUrl}
+            generatedModelUrl={generatedModelUrl}
+            isGenerating={isGenerating}
+            error={error}
+            onReset={reset}
+            onStartStyling={() => onModelFinalized(generatedModelUrl)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
