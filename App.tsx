@@ -96,6 +96,23 @@ const App: React.FC = () => {
     return currentLayer ? Object.keys(currentLayer.poseImages) : [];
   }, [outfitHistory, currentOutfitIndex]);
 
+  // Prevent accidental page refresh when user has an active session
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (modelImageUrl) {
+        e.preventDefault();
+        e.returnValue = ''; // Chrome requires returnValue to be set
+        return ''; // Some browsers show this message
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [modelImageUrl]);
+
   const handleModelFinalized = (url: string) => {
     setModelImageUrl(url);
     setOutfitHistory([{
@@ -289,7 +306,7 @@ const App: React.FC = () => {
               <motion.aside 
                 className={`absolute md:relative md:flex-shrink-0 bottom-0 right-0 h-auto max-h-[75vh] md:max-h-full md:h-full w-full md:w-1/3 md:max-w-sm bg-white/80 backdrop-blur-md flex flex-col border-t md:border-t-0 md:border-l border-gray-200/60 md:translate-y-0`}
                 animate={{
-                  y: isSheetCollapsed ? 'calc(100% - 4rem)' : 0
+                  y: isMobile && isSheetCollapsed ? 'calc(100% - 4rem)' : 0
                 }}
                 transition={{
                   type: "spring",
@@ -300,42 +317,41 @@ const App: React.FC = () => {
               >
                   <motion.button 
                     onClick={() => setIsSheetCollapsed(!isSheetCollapsed)} 
-                    className="md:hidden w-full h-16 flex flex-col items-center justify-center bg-gray-100/50 flex-shrink-0 gap-1"
-                    aria-label={isSheetCollapsed ? 'Expand panel' : 'Collapse panel'}
+                    className="md:hidden w-full h-16 flex items-center justify-center bg-gradient-to-b from-violet-500 to-violet-600 flex-shrink-0 gap-3 px-4 shadow-lg relative overflow-hidden"
+                    aria-label={isSheetCollapsed ? 'Open wardrobe' : 'Close wardrobe'}
                     whileTap={{ scale: 0.98 }}
                   >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                     <motion.div
+                      className="flex items-center gap-3 relative z-10"
                       animate={{ 
-                        rotate: isSheetCollapsed ? 0 : 180,
-                        y: isSheetCollapsed ? [0, -4, 0] : 0
+                        y: isSheetCollapsed ? [0, -3, 0] : 0
                       }}
                       transition={{ 
-                        rotate: { duration: 0.3, ease: "easeInOut" },
                         y: {
-                          duration: 0.8,
+                          duration: 1.2,
                           repeat: isSheetCollapsed ? Infinity : 0,
                           ease: "easeInOut"
                         }
                       }}
                     >
-                      {isSheetCollapsed ? <ChevronUpIcon className="w-6 h-6 text-gray-500" /> : <ChevronUpIcon className="w-6 h-6 text-gray-500" />}
+                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                      </svg>
+                      <span className="text-base font-bold text-white tracking-wide">
+                        {isSheetCollapsed ? 'TAP TO OPEN WARDROBE' : 'CLOSE WARDROBE'}
+                      </span>
+                      <motion.div
+                        animate={{ 
+                          rotate: isSheetCollapsed ? 0 : 180,
+                        }}
+                        transition={{ 
+                          rotate: { duration: 0.3, ease: "easeInOut" }
+                        }}
+                      >
+                        <ChevronUpIcon className="w-6 h-6 text-white" />
+                      </motion.div>
                     </motion.div>
-                    <motion.span 
-                      className="text-xs font-semibold text-violet-600"
-                      initial={false}
-                      animate={{ 
-                        opacity: isSheetCollapsed ? [0.7, 1, 0.7] : 1
-                      }}
-                      transition={{ 
-                        opacity: {
-                          duration: 1.5,
-                          repeat: isSheetCollapsed ? Infinity : 0,
-                          ease: "easeInOut"
-                        }
-                      }}
-                    >
-                      {isSheetCollapsed ? 'Explore More Outfits' : 'Close'}
-                    </motion.span>
                   </motion.button>
                   <div className="p-4 md:p-6 pb-6 md:pb-20 overflow-y-auto flex-grow flex flex-col gap-6 md:gap-8">
                     {error && (
