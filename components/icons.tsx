@@ -233,3 +233,61 @@ export const DownloadIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <line x1="12" y1="15" x2="12" y2="3" />
   </svg>
 );
+
+export const CoinIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+  >
+    <circle cx="12" cy="12" r="10" fill="url(#goldGradient)" stroke="#D4AF37" strokeWidth="1.5"/>
+    <circle cx="12" cy="12" r="7" fill="none" stroke="#FFF8DC" strokeWidth="0.5" opacity="0.6"/>
+    <text x="12" y="16" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#8B7355">C</text>
+    <defs>
+      <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style={{ stopColor: '#FFD700', stopOpacity: 1 }} />
+        <stop offset="50%" style={{ stopColor: '#FFA500', stopOpacity: 1 }} />
+        <stop offset="100%" style={{ stopColor: '#FF8C00', stopOpacity: 1 }} />
+      </linearGradient>
+    </defs>
+  </svg>
+);
+
+export const ShareIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+    <polyline points="16 6 12 2 8 6" />
+    <line x1="12" y1="10" x2="12" y2="18" />
+  </svg>
+);
+
+export const WhatsappIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+  </svg>
+);

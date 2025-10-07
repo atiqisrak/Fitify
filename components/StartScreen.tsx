@@ -5,11 +5,13 @@
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UploadCloudIcon } from './icons';
+import { UploadCloudIcon, CoinIcon } from './icons';
 import { Compare } from './ui/compare';
 import { generateModelImage } from '../services/geminiService';
 import Spinner from './Spinner';
 import { getFriendlyErrorMessage } from '../lib/utils';
+import { coinService } from '../services/coinService';
+import CoinModal from './CoinModal';
 
 interface StartScreenProps {
   onModelFinalized: (modelUrl: string) => void;
@@ -20,10 +22,18 @@ const StartScreen: React.FC<StartScreenProps> = ({ onModelFinalized }) => {
   const [generatedModelUrl, setGeneratedModelUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showCoinModal, setShowCoinModal] = useState(false);
+  const [currentCoins, setCurrentCoins] = useState(coinService.getCoins());
 
   const handleFileSelect = useCallback(async (file: File) => {
     if (!file.type.startsWith('image/')) {
         setError('Please select an image file.');
+        return;
+    }
+
+    if (!coinService.hasCoins()) {
+        setCurrentCoins(coinService.getCoins());
+        setShowCoinModal(true);
         return;
     }
 
@@ -37,7 +47,12 @@ const StartScreen: React.FC<StartScreenProps> = ({ onModelFinalized }) => {
         try {
             const result = await generateModelImage(file);
             setGeneratedModelUrl(result);
+            setCurrentCoins(coinService.getCoins());
         } catch (err) {
+            if ((err as Error).message === 'INSUFFICIENT_COINS') {
+                setCurrentCoins(coinService.getCoins());
+                setShowCoinModal(true);
+            }
             setError(getFriendlyErrorMessage(err, 'Failed to create model'));
             setUserImageUrl(null);
         } finally {
@@ -58,6 +73,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onModelFinalized }) => {
     setGeneratedModelUrl(null);
     setIsGenerating(false);
     setError(null);
+    setCurrentCoins(coinService.getCoins());
   };
 
   const screenVariants = {
@@ -68,6 +84,20 @@ const StartScreen: React.FC<StartScreenProps> = ({ onModelFinalized }) => {
 
   return (
     <div className="w-full">
+      <CoinModal 
+        isOpen={showCoinModal} 
+        onClose={() => setShowCoinModal(false)} 
+        currentCoins={currentCoins}
+      />
+      {/* Floating Coin Display */}
+      <button
+        onClick={() => setShowCoinModal(true)}
+        className="fixed top-6 right-6 md:top-8 md:right-8 z-50 flex items-center gap-2 px-2 py-1 bg-white/20 backdrop-blur-md rounded-2xl shadow-2xl hover:shadow-3xl hover:scale-110 transition-all cursor-pointer border border-white/30 hover:bg-white/30"
+        aria-label="View coins"
+      >
+        <CoinIcon className="w-7 h-7 md:w-8 md:h-8 drop-shadow-lg" />
+        <span className="text-lg md:text-xl font-bold text-gray-800 drop-shadow-sm">{currentCoins}</span>
+      </button>
       {/* Logo Header */}
       <div className="w-full flex justify-center pt-6 pb-4">
         <div className="absolute top-6 gap-2">
@@ -82,7 +112,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onModelFinalized }) => {
         {!userImageUrl ? (
           <motion.div
             key="uploader"
-            className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12"
+            className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12 mt-12 md:mt-0"
             variants={screenVariants}
             initial="initial"
             animate="animate"
