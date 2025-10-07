@@ -1,0 +1,318 @@
+{
+    "women": [
+        {
+            "id": "dress-blue",
+            "name": "Dress Blue",
+            "url": "f1.png"
+        },
+        {
+            "id": "dress-green",
+            "name": "Dress Green",
+            "url": "f2.png"
+        },
+        {
+            "id": "dress-orange",
+            "name": "Dress Orange",
+            "url": "f3.png"
+        },
+        {
+            "id": "dress-teal",
+            "name": "Dress Teal",
+            "url": "f4.png"
+        },
+        {
+            "id": "dress-red",
+            "name": "Dress Red",
+            "url": "f5.png"
+        },
+        {
+            "id": "women-saree-red",
+            "name": "Women Saree Red",
+            "url": "s1.png"
+        },
+        {
+            "id": "women-saree-yellow",
+            "name": "Women Saree Yellow",
+            "url": "s2.png"
+        },
+        {
+            "id": "women-outfit-1",
+            "name": "Women Outfit 1",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/a8dfa331-7bcf-442d-986e-d26da838aaae-300x400.jpg"
+        },
+        {
+            "id": "women-outfit-2",
+            "name": "Women Outfit 2",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/9dd58f41-a662-42f0-ac5b-4fed05a4f72a-300x400.jpg"
+        },
+        {
+            "id": "women-outfit-3",
+            "name": "Women Outfit 3",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/9ccdd2ed-e88f-4cd2-857b-b5f1fa18cc69-300x400.jpg"
+        },
+        {
+            "id": "women-outfit-4",
+            "name": "Women Outfit 4",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/532deeae-0a2e-4832-be9b-d07c50f948cf-300x400.jpg"
+        },
+        {
+            "id": "women-outfit-5",
+            "name": "Women Outfit 5",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/f1e205a6-75f5-47c3-abaf-a640af48b85d-300x400.jpg"
+        },
+        {
+            "id": "women-outfit-6",
+            "name": "Women Outfit 6",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/88faff0f-89b3-4db9-ad5b-5013dcff2d7d-300x400.jpg"
+        },
+        {
+            "id": "women-outfit-7",
+            "name": "Women Outfit 7",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2024/01/teen-girl.jpg"
+        },
+        {
+            "id": "women-outfit-8",
+            "name": "Women Outfit 8",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/094dbb2f-5ae9-4bfa-8e99-a8cba97e5f4a-300x400.jpg"
+        },
+        {
+            "id": "women-outfit-9",
+            "name": "Women Outfit 9",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/5f3e8caa-4fb4-469e-84b2-a336dc8ba60c-300x400.jpg"
+        },
+        {
+            "id": "women-outfit-10",
+            "name": "Women Outfit 10",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/7cf363b0-35f9-4625-b571-6a57036bab7a-300x400.jpg"
+        },
+        {
+            "id": "women-outfit-11",
+            "name": "Women Outfit 11",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/b25b7840-0078-4bc5-853f-5636a6ca7ffc-300x400.jpg"
+        },
+        {
+            "id": "women-outfit-12",
+            "name": "Women Outfit 12",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/6ed50e76-d85e-4a8a-82da-b8db5699deac-300x400.jpg"
+        },
+        {
+            "id": "women-outfit-13",
+            "name": "Women Outfit 13",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/dc335e4b-20e9-4639-9c63-3979f2783b0f-300x400.jpg"
+        },
+        {
+            "id": "women-outfit-14",
+            "name": "Women Outfit 14",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/05e12ab5-1228-466a-8482-99c825fd1980-300x400.jpg"
+        },
+        {
+            "id": "women-outfit-15",
+            "name": "Women Outfit 15",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/48bd9dd7-31eb-4888-912c-732e03a929ce-300x400.jpg"
+        },
+        {
+            "id": "women-outfit-16",
+            "name": "Women Outfit 16",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/08/tab__2025_women.jpg"
+        },
+        {
+            "id": "women-outfit-17",
+            "name": "Women Outfit 17",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/b25df588-c301-4cd4-b425-3e981f80c5ad-300x400.jpg"
+        }
+    ],
+    "men": [
+        {
+            "id": "men-drop",
+            "name": "Men Drop Shoulder",
+            "url": "m1.png"
+        },
+        {
+            "id": "men-drop-shoulder-2",
+            "name": "Men Drop Shoulder",
+            "url": "m2.png"
+        },
+        {
+            "id": "men-formal-red",
+            "name": "Men Formal Red",
+            "url": "m3.png"
+        },
+        {
+            "id": "men-formal-blue",
+            "name": "Men Formal Blue",
+            "url": "m4.png"
+        },
+        {
+            "id": "men-formal-ash",
+            "name": "Men Formal Ash",
+            "url": "m5.png"
+        },
+        {
+            "id": "men-outfit-1",
+            "name": "Men Outfit 1",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2024/02/m.jpg"
+        },
+        {
+            "id": "men-outfit-2",
+            "name": "Men Outfit 2",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/184fd42a-1204-4af9-8765-7d2ad7ff00f0-300x400.jpg"
+        },
+        {
+            "id": "men-outfit-3",
+            "name": "Men Outfit 3",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/1f576488-ecb2-479a-a153-422139ee2eb7-300x400.jpg"
+        },
+        {
+            "id": "men-outfit-4",
+            "name": "Men Outfit 4",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/9636cdc4-63fb-4a5d-ae2c-0cab61be5950-300x400.jpg"
+        },
+        {
+            "id": "men-outfit-5",
+            "name": "Men Outfit 5",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/179a0762-5f37-4a03-890f-5edf6d9f6563-300x400.jpg"
+        },
+        {
+            "id": "men-outfit-6",
+            "name": "Men Outfit 6",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/fda2f10d-5abb-485d-826a-7efbb859410e-300x400.jpg"
+        },
+        {
+            "id": "men-outfit-7",
+            "name": "Men Outfit 7",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/788d8159-6920-4106-b182-4d453f2b356a-300x400.jpg"
+        },
+        {
+            "id": "men-outfit-8",
+            "name": "Men Outfit 8",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/cd24705b-1ef1-44fb-914a-00bd57d1a71a-300x400.jpg"
+        },
+        {
+            "id": "men-outfit-9",
+            "name": "Men Outfit 9",
+            "url": "https://www.lerevecraze.com/wp-content/uploads/2025/09/0ddcdbd9-890f-4c37-89ee-179a5cf1b992-300x400.jpg"
+        }
+    ],
+    "unisex": [
+        {
+            "id": "polo-tripping",
+            "name": "Polo (Tripping)",
+            "url": "polo1.jpg"
+        },
+        {
+            "id": "sweat-shirt",
+            "name": "Sweat Shirt",
+            "url": "sweat1.jpg"
+        },
+        {
+            "id": "unisex-outfit-1",
+            "name": "Unisex Outfit 1",
+            "url": "https://madkoffee.com/wp-content/uploads/2024/06/DSC03989-scaled.jpg"
+        },
+        {
+            "id": "unisex-outfit-2",
+            "name": "Unisex Outfit 2",
+            "url": "https://madkoffee.com/wp-content/uploads/2024/03/KN09-scaled.jpg"
+        },
+        {
+            "id": "unisex-outfit-3",
+            "name": "Unisex Outfit 3",
+            "url": "https://madkoffee.com/wp-content/uploads/2024/06/DSC04041-scaled.jpg"
+        },
+        {
+            "id": "unisex-outfit-4",
+            "name": "Unisex Outfit 4",
+            "url": "https://madkoffee.com/wp-content/uploads/2024/06/DSC03926-scaled.jpg"
+        },
+        {
+            "id": "unisex-outfit-5",
+            "name": "Unisex Outfit 5",
+            "url": "https://madkoffee.com/wp-content/uploads/2024/03/KN09-1639x2048.jpg"
+        },
+        {
+            "id": "unisex-outfit-6",
+            "name": "Unisex Outfit 6",
+            "url": "https://madkoffee.com/wp-content/uploads/2024/06/DSC03926-1638x2048.jpg"
+        },
+        {
+            "id": "unisex-outfit-7",
+            "name": "Unisex Outfit 7",
+            "url": "https://madkoffee.com/wp-content/uploads/2024/01/328992049_707973057730145_5098515903544065239_n.jpg"
+        },
+        {
+            "id": "unisex-outfit-8",
+            "name": "Unisex Outfit 8",
+            "url": "https://madkoffee.com/wp-content/uploads/2023/11/404831379_18399751957026075_8259280483503356292_n.jpg"
+        },
+        {
+            "id": "unisex-outfit-9",
+            "name": "Unisex Outfit 9",
+            "url": "https://madkoffee.com/wp-content/uploads/2025/03/WhatsApp-Image-2025-03-01-at-5.43.54-PM.jpeg"
+        },
+        {
+            "id": "unisex-outfit-10",
+            "name": "Unisex Outfit 10",
+            "url": "https://madkoffee.com/wp-content/uploads/2023/12/337504139_1664592897326022_8823417760552896758_n-768x960.jpg"
+        },
+        {
+            "id": "unisex-outfit-11",
+            "name": "Unisex Outfit 11",
+            "url": "https://madkoffee.com/wp-content/uploads/2025/06/496008837_1094745362685255_5635220050273641818_n-768x960.jpg"
+        },
+        {
+            "id": "unisex-outfit-12",
+            "name": "Unisex Outfit 12",
+            "url": "https://madkoffee.com/wp-content/uploads/2023/11/363532169_1499354127489651_2993456375774419270_n.jpg"
+        },
+        {
+            "id": "unisex-tshirt-1",
+            "name": "Dog Person Tee",
+            "url": "https://madkoffee.com/wp-content/uploads/2025/09/Dog-Person-Mockup-1-300x375.jpg"
+        },
+        {
+            "id": "unisex-tshirt-2",
+            "name": "Coffee Nesha Tee",
+            "url": "https://madkoffee.com/wp-content/uploads/2025/09/Coffee-Nesha-White-Tee-300x375.jpg"
+        },
+        {
+            "id": "unisex-tshirt-3",
+            "name": "Unisex Tee 3",
+            "url": "https://madkoffee.com/wp-content/uploads/2025/04/484513958_1048810847278707_6067069770185828572_n-300x375.jpg"
+        },
+        {
+            "id": "unisex-tshirt-4",
+            "name": "Unisex Tee 4",
+            "url": "https://madkoffee.com/wp-content/uploads/2025/03/WhatsApp-Image-2025-03-01-at-5.45.53-PM-3-300x375.jpeg"
+        },
+        {
+            "id": "unisex-tshirt-5",
+            "name": "Coffee Writing Tee",
+            "url": "https://madkoffee.com/wp-content/uploads/2025/09/Coffee-Writing-Mockup-300x375.jpg"
+        },
+        {
+            "id": "unisex-tshirt-6",
+            "name": "Meow Cute Tee",
+            "url": "https://madkoffee.com/wp-content/uploads/2025/09/Meow-Cute-Design-T-Shirt-Template-Mockup-1-300x375.jpg"
+        },
+        {
+            "id": "unisex-tshirt-7",
+            "name": "Create Something Tee",
+            "url": "https://madkoffee.com/wp-content/uploads/2025/09/Create-something-Mockup-002-300x375.jpg"
+        },
+        {
+            "id": "unisex-tshirt-8",
+            "name": "I Hate You Too Tee",
+            "url": "https://madkoffee.com/wp-content/uploads/2025/09/I-hate-you-too-Mockup-001-Front-300x375.jpg"
+        },
+        {
+            "id": "unisex-tshirt-9",
+            "name": "Unisex Tee 9",
+            "url": "https://madkoffee.com/wp-content/uploads/2025/04/487313724_1060398229453302_680260997219147947_n-300x375.jpg"
+        },
+        {
+            "id": "unisex-tshirt-10",
+            "name": "Kulfi Malai Tee",
+            "url": "https://madkoffee.com/wp-content/uploads/2025/09/Kulfi-malai-Mockup-01-300x375.jpg"
+        }
+    ]
+}

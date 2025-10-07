@@ -31,33 +31,12 @@ const StartScreen: React.FC<StartScreenProps> = ({ onModelFinalized }) => {
         return;
     }
 
-    if (!coinService.hasCoins()) {
-        setCurrentCoins(coinService.getCoins());
-        setShowCoinModal(true);
-        return;
-    }
-
     const reader = new FileReader();
     reader.onload = async (e) => {
         const dataUrl = e.target?.result as string;
         setUserImageUrl(dataUrl);
-        setIsGenerating(true);
-        setGeneratedModelUrl(null);
+        setGeneratedModelUrl(dataUrl); // Use original image directly
         setError(null);
-        try {
-            const result = await generateModelImage(file);
-            setGeneratedModelUrl(result);
-            setCurrentCoins(coinService.getCoins());
-        } catch (err) {
-            if ((err as Error).message === 'INSUFFICIENT_COINS') {
-                setCurrentCoins(coinService.getCoins());
-                setShowCoinModal(true);
-            }
-            setError(getFriendlyErrorMessage(err, 'Failed to create model'));
-            setUserImageUrl(null);
-        } finally {
-            setIsGenerating(false);
-        }
     };
     reader.readAsDataURL(file);
   }, []);
@@ -122,10 +101,10 @@ const StartScreen: React.FC<StartScreenProps> = ({ onModelFinalized }) => {
             <div className="lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left">
               <div className="max-w-lg">
                 <h2 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 leading-tight">
-                  Create Your Model for Any Look.
+                  Try On Any Look Instantly.
                 </h2>
               <p className="mt-4 text-lg text-gray-600">
-                Ever wondered how an outfit would look on you? Stop guessing. Upload a photo and see for yourself. Our AI creates your personal model, ready to try on anything.
+                Ever wondered how an outfit would look on you? Upload your photo and explore our wardrobe. Use the Magic button to transform your look with AI.
               </p>
               <hr className="my-8 border-gray-200" />
               <div className="flex flex-col items-center lg:items-start w-full gap-3">
@@ -162,30 +141,23 @@ const StartScreen: React.FC<StartScreenProps> = ({ onModelFinalized }) => {
           <div className="md:w-1/2 flex-shrink-0 flex flex-col items-center md:items-start">
             <div className="text-center md:text-left">
               <h2 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 leading-tight">
-                The New You
+                Ready to Style
               </h2>
               <p className="mt-2 text-md text-gray-600">
-                Drag the slider to see your transformation.
+                Your photo is uploaded. Let's try on some outfits!
               </p>
             </div>
-            
-            {isGenerating && (
-              <div className="flex items-center gap-3 text-lg text-gray-700 font-serif mt-6">
-                <Spinner />
-                <span>Generating your model...</span>
-              </div>
-            )}
 
             {error && 
               <div className="text-center md:text-left text-red-600 max-w-md mt-6">
-                <p className="font-semibold">Generation Failed</p>
+                <p className="font-semibold">Upload Failed</p>
                 <p className="text-sm mb-4">{error}</p>
                 <button onClick={reset} className="text-sm font-semibold text-gray-700 hover:underline">Try Again</button>
               </div>
             }
             
             <AnimatePresence>
-              {generatedModelUrl && !isGenerating && !error && (
+              {generatedModelUrl && !error && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -203,7 +175,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onModelFinalized }) => {
                     onClick={() => onModelFinalized(generatedModelUrl)}
                     className="w-full sm:w-auto relative inline-flex items-center justify-center px-8 py-3 text-base font-semibold text-white bg-gray-900 rounded-md cursor-pointer group hover:bg-gray-700 transition-colors"
                   >
-                    Proceed to Styling &rarr;
+                    Start Styling &rarr;
                   </button>
                 </motion.div>
               )}

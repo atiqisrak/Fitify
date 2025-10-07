@@ -291,3 +291,23 @@ export const WhatsappIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
   </svg>
 );
+
+export const WandIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M3 21L9 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M14.5 4L15.5 6L17.5 7L15.5 8L14.5 10L13.5 8L11.5 7L13.5 6L14.5 4Z" fill="currentColor" stroke="none"/>
+    <path d="M19 9L19.5 10.5L21 11L19.5 11.5L19 13L18.5 11.5L17 11L18.5 10.5L19 9Z" fill="currentColor" stroke="none"/>
+    <path d="M16.5 14L17 15.5L18.5 16L17 16.5L16.5 18L16 16.5L14.5 16L16 15.5L16.5 14Z" fill="currentColor" stroke="none"/>
+  </svg>
+);

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import React, { useState } from 'react';
-import { defaultWardrobe } from '../wardrobe';
+import { categorizedWardrobe } from '../wardrobe';
 import type { WardrobeItem } from '../types';
 import { UploadCloudIcon, CheckCircleIcon, XIcon } from './icons';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -17,16 +17,101 @@ interface WardrobeModalProps {
   isLoading: boolean;
 }
 
-// Helper to convert image URL to a File object
+type Category = 'women' | 'men' | 'unisex';
+
+// Helper to convert image URL to a File object with CORS support
 const urlToFile = async (url: string, filename: string): Promise<File> => {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    const mimeType = blob.type;
-    return new File([blob], filename, { type: mimeType });
+    // Check if this is an external URL that might have CORS issues
+    const isExternalUrl = url.startsWith('http://') || url.startsWith('https://');
+    const isBlobUrl = url.startsWith('blob:');
+    
+    // For blob URLs or local URLs, fetch directly
+    if (isBlobUrl || !isExternalUrl) {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const mimeType = blob.type || 'image/jpeg';
+        return new File([blob], filename, { type: mimeType });
+    }
+    
+    // For external URLs, try direct fetch first
+    try {
+        const response = await fetch(url, { 
+            mode: 'cors',
+            credentials: 'omit'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch image: ${response.statusText}`);
+        }
+        
+        const blob = await response.blob();
+        const mimeType = blob.type || 'image/jpeg';
+        return new File([blob], filename, { type: mimeType });
+    } catch (directFetchError) {
+        // Expected behavior: External images often block direct CORS requests
+        // We'll try CORS proxies as fallback (this is normal and not an error)
+        console.log('Direct fetch blocked (expected for external images), using CORS proxy...');
+        
+        // Try using a CORS proxy
+        const corsProxies = [
+            `https://corsproxy.io/?${encodeURIComponent(url)}`,
+            `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+        ];
+        
+        for (const proxyUrl of corsProxies) {
+            try {
+                const response = await fetch(proxyUrl);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const mimeType = blob.type || 'image/jpeg';
+                    return new File([blob], filename, { type: mimeType });
+                }
+            } catch (proxyError) {
+                // Try next proxy silently
+                continue;
+            }
+        }
+        
+        // Last resort: Canvas approach
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    reject(new Error('Could not get canvas context'));
+                    return;
+                }
+                
+                ctx.drawImage(img, 0, 0);
+                
+                canvas.toBlob((blob) => {
+                    if (!blob) {
+                        reject(new Error('Canvas toBlob failed'));
+                        return;
+                    }
+                    const file = new File([blob], filename, { type: 'image/png' });
+                    resolve(file);
+                }, 'image/png');
+            };
+            
+            img.onerror = () => {
+                reject(new Error('Unable to load image. The image server does not allow cross-origin requests. Please use the Upload button to add custom garments.'));
+            };
+            
+            img.src = url;
+        });
+    }
 };
 
 const WardrobeModal: React.FC<WardrobeModalProps> = ({ isOpen, onClose, onGarmentSelect, activeGarmentIds, isLoading }) => {
     const [error, setError] = useState<string | null>(null);
+    const [activeCategory, setActiveCategory] = useState<Category>('women');
 
     const handleGarmentClick = async (item: WardrobeItem) => {
         if (isLoading || activeGarmentIds.includes(item.id)) return;
@@ -35,7 +120,9 @@ const WardrobeModal: React.FC<WardrobeModalProps> = ({ isOpen, onClose, onGarmen
             const file = await urlToFile(item.url, `${item.id}.png`);
             onGarmentSelect(file, item);
         } catch (err) {
-            setError('Could not load wardrobe item. Please try again.');
+            console.error('Failed to load wardrobe item:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Could not load wardrobe item. Please try again.';
+            setError(errorMessage);
         }
     };
 
@@ -79,8 +166,42 @@ const WardrobeModal: React.FC<WardrobeModalProps> = ({ isOpen, onClose, onGarmen
                         </button>
                     </div>
                     <div className="p-6 overflow-y-auto">
+                        {/* Category Tabs */}
+                        <div className="flex gap-2 mb-4">
+                            <button
+                                onClick={() => setActiveCategory('women')}
+                                className={`flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all ${
+                                    activeCategory === 'women'
+                                        ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md'
+                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                }`}
+                            >
+                                Women
+                            </button>
+                            <button
+                                onClick={() => setActiveCategory('men')}
+                                className={`flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all ${
+                                    activeCategory === 'men'
+                                        ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md'
+                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                }`}
+                            >
+                                Men
+                            </button>
+                            <button
+                                onClick={() => setActiveCategory('unisex')}
+                                className={`flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all ${
+                                    activeCategory === 'unisex'
+                                        ? 'bg-gradient-to-r from-purple-500 to-violet-500 text-white shadow-md'
+                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                }`}
+                            >
+                                Unisex
+                            </button>
+                        </div>
+                        
                         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-                            {defaultWardrobe.map((item) => {
+                            {categorizedWardrobe[activeCategory].map((item) => {
                             const isActive = activeGarmentIds.includes(item.id);
                             return (
                                 <button

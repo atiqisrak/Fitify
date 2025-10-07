@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import React, { useState } from 'react';
-import { RotateCcwIcon, ChevronLeftIcon, ChevronRightIcon, DownloadIcon } from './icons';
+import { RotateCcwIcon, ChevronLeftIcon, ChevronRightIcon, DownloadIcon, WandIcon } from './icons';
 import Spinner from './Spinner';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -16,9 +16,11 @@ interface CanvasProps {
   poseInstructions: string[];
   currentPoseIndex: number;
   availablePoseKeys: string[];
+  onMagicTransform?: () => void;
+  showMagicButton?: boolean;
 }
 
-const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading, loadingMessage, onSelectPose, poseInstructions, currentPoseIndex, availablePoseKeys }) => {
+const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading, loadingMessage, onSelectPose, poseInstructions, currentPoseIndex, availablePoseKeys, onMagicTransform, showMagicButton }) => {
   const [isPoseMenuOpen, setIsPoseMenuOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   
@@ -191,24 +193,51 @@ const Canvas: React.FC<CanvasProps> = ({ displayImageUrl, onStartOver, isLoading
             </button>
           </div>
 
-          {/* Download Button */}
-          <motion.div
-            className="relative p-[2px] rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 shadow-lg hover:shadow-xl transition-shadow duration-300"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <button
-              onClick={handleDownload}
-              disabled={isDownloading}
-              className="relative group/download bg-white/80 backdrop-blur-sm hover:bg-white/90 text-gray-800 font-semibold py-2 md:py-2.5 px-4 md:px-6 rounded-full transition-all duration-300 ease-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 w-full"
-              aria-label="Download image"
+          {/* Action Buttons Container */}
+          <div className="flex items-center gap-2">
+            {/* Magic Transform Button */}
+            {showMagicButton && onMagicTransform && (
+              <motion.div
+                className="relative p-[2px] rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 shadow-lg hover:shadow-xl transition-shadow duration-300"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", duration: 0.6 }}
+              >
+                <button
+                  onClick={onMagicTransform}
+                  disabled={isLoading}
+                  className="relative group/magic bg-white/80 backdrop-blur-sm hover:bg-white/90 text-gray-800 font-semibold py-2 md:py-2.5 px-4 md:px-6 rounded-full transition-all duration-300 ease-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 w-full"
+                  aria-label="Transform with AI"
+                >
+                  <WandIcon className="w-4 h-4 md:w-5 md:h-5 transition-transform duration-300 group-hover/magic:rotate-12" />
+                  <span className="text-xs md:text-sm font-semibold whitespace-nowrap">
+                    AI Magic
+                  </span>
+                </button>
+              </motion.div>
+            )}
+            
+            {/* Download Button */}
+            <motion.div
+              className="relative p-[2px] rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 shadow-lg hover:shadow-xl transition-shadow duration-300"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <DownloadIcon className={`w-4 h-4 md:w-5 md:h-5 transition-transform duration-300 ${isDownloading ? 'animate-bounce' : 'group-hover/download:translate-y-0.5'}`} />
-              <span className="text-xs md:text-sm font-semibold">
-                {isDownloading ? 'Downloading...' : 'Download'}
-              </span>
-            </button>
-          </motion.div>
+              <button
+                onClick={handleDownload}
+                disabled={isDownloading}
+                className="relative group/download bg-white/80 backdrop-blur-sm hover:bg-white/90 text-gray-800 font-semibold py-2 md:py-2.5 px-4 md:px-6 rounded-full transition-all duration-300 ease-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 w-full"
+                aria-label="Download image"
+              >
+                <DownloadIcon className={`w-4 h-4 md:w-5 md:h-5 transition-transform duration-300 ${isDownloading ? 'animate-bounce' : 'group-hover/download:translate-y-0.5'}`} />
+                <span className="text-xs md:text-sm font-semibold">
+                  {isDownloading ? 'Downloading...' : 'Download'}
+                </span>
+              </button>
+            </motion.div>
+          </div>
         </div>
       )}
     </div>

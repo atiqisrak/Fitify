@@ -10,15 +10,17 @@ import Canvas from './components/Canvas';
 import WardrobePanel from './components/WardrobeModal';
 import OutfitStack from './components/OutfitStack';
 import Header from './components/Header';
-import { generateVirtualTryOnImage, generatePoseVariation } from './services/geminiService';
+import { generateVirtualTryOnImage, generatePoseVariation, generateModelImage } from './services/geminiService';
 import { OutfitLayer, WardrobeItem } from './types';
-import { ChevronDownIcon, ChevronUpIcon, CoinIcon } from './components/icons';
+import { ChevronDownIcon, ChevronUpIcon, CoinIcon, WandIcon } from './components/icons';
 import { defaultWardrobe } from './wardrobe';
 import Footer from './components/Footer';
 import { getFriendlyErrorMessage } from './lib/utils';
 import Spinner from './components/Spinner';
 import { coinService } from './services/coinService';
 import CoinModal from './components/CoinModal';
+import { imageStorageService } from './services/imageStorageService';
+import ImageGalleryModal from './components/ImageGalleryModal';
 
 const POSE_INSTRUCTIONS = [
   "Full frontal view, hands on hips",
@@ -56,6 +58,8 @@ const useMediaQuery = (query: string): boolean => {
 
 const App: React.FC = () => {
   const [modelImageUrl, setModelImageUrl] = useState<string | null>(null);
+  const [originalUserImageUrl, setOriginalUserImageUrl] = useState<string | null>(null);
+  const [isModelTransformed, setIsModelTransformed] = useState(false);
   const [outfitHistory, setOutfitHistory] = useState<OutfitLayer[]>([]);
   const [currentOutfitIndex, setCurrentOutfitIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -67,6 +71,7 @@ const App: React.FC = () => {
   const isMobile = useMediaQuery('(max-width: 767px)');
   const [showCoinModal, setShowCoinModal] = useState(false);
   const [currentCoins, setCurrentCoins] = useState(coinService.getCoins());
+  const [showGalleryModal, setShowGalleryModal] = useState(false);
 
   const activeOutfitLayers = useMemo(() => 
     outfitHistory.slice(0, currentOutfitIndex + 1), 
@@ -115,11 +120,60 @@ const App: React.FC = () => {
 
   const handleModelFinalized = (url: string) => {
     setModelImageUrl(url);
+    setOriginalUserImageUrl(url);
+    setIsModelTransformed(false);
     setOutfitHistory([{
       garment: null,
       poseImages: { [POSE_INSTRUCTIONS[0]]: url }
     }]);
     setCurrentOutfitIndex(0);
+  };
+
+  const handleMagicTransform = async () => {
+    if (!originalUserImageUrl || isLoading || !coinService.hasCoins()) {
+      if (!coinService.hasCoins()) {
+        setShowCoinModal(true);
+      }
+      return;
+    }
+
+    setIsLoading(true);
+    setLoadingMessage('Creating your AI model...');
+    setError(null);
+
+    try {
+      // Convert data URL to File
+      const response = await fetch(originalUserImageUrl);
+      const blob = await response.blob();
+      const file = new File([blob], 'user-image.jpg', { type: 'image/jpeg' });
+
+      const transformedUrl = await generateModelImage(file);
+      
+      // Store the transformation
+      imageStorageService.storeImage({
+        userImageUrl: originalUserImageUrl,
+        modelImageUrl: transformedUrl,
+        generatedImageUrl: transformedUrl,
+      });
+
+      setModelImageUrl(transformedUrl);
+      setIsModelTransformed(true);
+      setOutfitHistory([{
+        garment: null,
+        poseImages: { [POSE_INSTRUCTIONS[0]]: transformedUrl }
+      }]);
+      setCurrentOutfitIndex(0);
+      setCurrentCoins(coinService.getCoins());
+    } catch (err) {
+      if ((err as Error).message === 'INSUFFICIENT_COINS') {
+        setCurrentCoins(coinService.getCoins());
+        setShowCoinModal(true);
+      }
+      setError(getFriendlyErrorMessage(err, 'Failed to transform image'));
+    } finally {
+      setIsLoading(false);
+      setLoadingMessage('');
+    }
   };
 
   const handleStartOver = () => {
@@ -137,11 +191,36 @@ const App: React.FC = () => {
   const handleGarmentSelect = useCallback(async (garmentFile: File, garmentInfo: WardrobeItem) => {
     if (!displayImageUrl || isLoading) return;
 
+    const currentPoseInstruction = POSE_INSTRUCTIONS[currentPoseIndex];
+    
+    // Check cache first
+    const cachedImage = imageStorageService.getCachedImage(
+      originalUserImageUrl || displayImageUrl,
+      garmentInfo.id,
+      currentPoseInstruction
+    );
+
+    if (cachedImage) {
+      // Use cached image - no coin cost!
+      const newLayer: OutfitLayer = { 
+        garment: garmentInfo, 
+        poseImages: { [currentPoseInstruction]: cachedImage } 
+      };
+
+      setOutfitHistory(prevHistory => {
+        const newHistory = prevHistory.slice(0, currentOutfitIndex + 1);
+        return [...newHistory, newLayer];
+      });
+      setCurrentOutfitIndex(prev => prev + 1);
+      setCurrentPoseIndex(0);
+      return;
+    }
+
     // Caching: Check if we are re-applying a previously generated layer
     const nextLayer = outfitHistory[currentOutfitIndex + 1];
     if (nextLayer && nextLayer.garment?.id === garmentInfo.id) {
         setCurrentOutfitIndex(prev => prev + 1);
-        setCurrentPoseIndex(0); // Reset pose when changing layer
+        setCurrentPoseIndex(0);
         return;
     }
 
@@ -151,7 +230,16 @@ const App: React.FC = () => {
 
     try {
       const newImageUrl = await generateVirtualTryOnImage(displayImageUrl, garmentFile);
-      const currentPoseInstruction = POSE_INSTRUCTIONS[currentPoseIndex];
+      
+      // Store in cache
+      imageStorageService.storeImage({
+        userImageUrl: originalUserImageUrl || displayImageUrl,
+        modelImageUrl: displayImageUrl,
+        garmentId: garmentInfo.id,
+        garmentName: garmentInfo.name,
+        generatedImageUrl: newImageUrl,
+        poseInstruction: currentPoseInstruction,
+      });
       
       const newLayer: OutfitLayer = { 
         garment: garmentInfo, 
@@ -159,7 +247,6 @@ const App: React.FC = () => {
       };
 
       setOutfitHistory(prevHistory => {
-        // Cut the history at the current point before adding the new layer
         const newHistory = prevHistory.slice(0, currentOutfitIndex + 1);
         return [...newHistory, newLayer];
       });
@@ -183,7 +270,7 @@ const App: React.FC = () => {
       setIsLoading(false);
       setLoadingMessage('');
     }
-  }, [displayImageUrl, isLoading, currentPoseIndex, outfitHistory, currentOutfitIndex]);
+  }, [displayImageUrl, isLoading, currentPoseIndex, outfitHistory, currentOutfitIndex, originalUserImageUrl]);
 
   const handleRemoveLastGarment = () => {
     if (currentOutfitIndex > 0) {
@@ -253,17 +340,45 @@ const App: React.FC = () => {
         onClose={() => setShowCoinModal(false)} 
         currentCoins={currentCoins}
       />
+      <ImageGalleryModal
+        isOpen={showGalleryModal}
+        onClose={() => setShowGalleryModal(false)}
+        userImageUrl={originalUserImageUrl || undefined}
+      />
       {modelImageUrl && (
-        <button
-          onClick={() => setShowCoinModal(true)}
-          className="fixed top-6 right-6 md:top-8 md:right-8 z-50 flex items-center gap-2 px-2 py-1 bg-white/20 
-          backdrop-blur-md rounded-2xl shadow-2xl hover:shadow-3xl hover:scale-110 
-          transition-all cursor-pointer border border-white/30 hover:bg-white/30"
-          aria-label="View coins"
-        >
-          <CoinIcon className="w-7 h-7 md:w-8 md:h-8 drop-shadow-lg" />
-          <span className="text-lg md:text-xl font-bold text-gray-800 drop-shadow-sm">{currentCoins}</span>
-        </button>
+        <div className="fixed top-4 right-4 md:top-6 md:right-6 z-50 flex flex-col md:flex-row items-end md:items-center gap-2">
+          {/* Coins Display - First on mobile (top), Second on desktop (right) */}
+          <motion.button
+            onClick={() => setShowCoinModal(true)}
+            className="flex items-center gap-2 px-2 py-1 md:px-3 md:py-2 bg-white/20 backdrop-blur-md rounded-xl shadow-2xl hover:shadow-3xl hover:scale-110 transition-all border border-white/30 hover:bg-white/30 order-1 md:order-2"
+            aria-label="View coins"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            initial={{ x: 100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          >
+            <CoinIcon className="w-6 h-6 md:w-7 md:h-7 drop-shadow-lg" />
+            <span className="text-base md:text-lg font-bold text-gray-800 drop-shadow-sm">{currentCoins}</span>
+          </motion.button>
+          
+          {/* Gallery Button - Second on mobile (bottom), First on desktop (left) */}
+          <motion.button
+            onClick={() => setShowGalleryModal(true)}
+            className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-xl shadow-2xl hover:shadow-3xl hover:scale-110 transition-all order-2 md:order-1"
+            aria-label="View gallery"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            initial={{ x: 100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span className="hidden sm:inline text-sm md:text-base">Gallery</span>
+          </motion.button>
+        </div>
       )}
       <AnimatePresence mode="wait">
         {!modelImageUrl ? (
@@ -300,6 +415,8 @@ const App: React.FC = () => {
                   poseInstructions={POSE_INSTRUCTIONS}
                   currentPoseIndex={currentPoseIndex}
                   availablePoseKeys={availablePoseKeys}
+                  onMagicTransform={handleMagicTransform}
+                  showMagicButton={!isModelTransformed && !!modelImageUrl}
                 />
               </div>
 
