@@ -9,6 +9,7 @@ import StartScreen from './components/StartScreen';
 import Canvas from './components/Canvas';
 import WardrobePanel from './components/WardrobeModal';
 import OutfitStack from './components/OutfitStack';
+import Header from './components/Header';
 import { generateVirtualTryOnImage, generatePoseVariation } from './services/geminiService';
 import { OutfitLayer, WardrobeItem } from './types';
 import { ChevronDownIcon, ChevronUpIcon } from './components/icons';
@@ -239,7 +240,8 @@ const App: React.FC = () => {
             exit="exit"
             transition={{ duration: 0.5, ease: 'easeInOut' }}
           >
-            <main className="flex-grow relative flex flex-col md:flex-row overflow-hidden">
+            <Header />
+            <main className="flex-grow relative flex flex-col md:flex-row overflow-hidden pt-14 md:pt-16">
               <div className="w-full h-full flex-grow flex items-center justify-center bg-white pb-20 md:pb-0 relative">
                 <Canvas 
                   displayImageUrl={displayImageUrl}

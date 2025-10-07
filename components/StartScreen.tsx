@@ -67,22 +67,33 @@ const StartScreen: React.FC<StartScreenProps> = ({ onModelFinalized }) => {
   };
 
   return (
-    <AnimatePresence mode="wait">
-      {!userImageUrl ? (
-        <motion.div
-          key="uploader"
-          className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12"
-          variants={screenVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          transition={{ duration: 0.4, ease: "easeInOut" }}
-        >
-          <div className="lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left">
-            <div className="max-w-lg">
-              <h1 className="text-5xl md:text-6xl font-serif font-bold text-gray-900 leading-tight">
-                Create Your Model for Any Look.
-              </h1>
+    <div className="w-full">
+      {/* Logo Header */}
+      <div className="w-full flex justify-center pt-6 pb-4">
+        <div className="flex items-center gap-2">
+          <img src="/Fitify.svg" alt="Fitify Logo" className="w-28 h-8 md:w-10 md:h-10" />
+          {/* <h1 className="text-3xl md:text-4xl font-serif font-bold tracking-wide text-gray-900">
+            Fitify
+          </h1> */}
+        </div>
+      </div>
+      
+      <AnimatePresence mode="wait">
+        {!userImageUrl ? (
+          <motion.div
+            key="uploader"
+            className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12"
+            variants={screenVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+          >
+            <div className="lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left">
+              <div className="max-w-lg">
+                <h2 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 leading-tight">
+                  Create Your Model for Any Look.
+                </h2>
               <p className="mt-4 text-lg text-gray-600">
                 Ever wondered how an outfit would look on you? Stop guessing. Upload a photo and see for yourself. Our AI creates your personal model, ready to try on anything.
               </p>
@@ -120,9 +131,9 @@ const StartScreen: React.FC<StartScreenProps> = ({ onModelFinalized }) => {
         >
           <div className="md:w-1/2 flex-shrink-0 flex flex-col items-center md:items-start">
             <div className="text-center md:text-left">
-              <h1 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 leading-tight">
+              <h2 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 leading-tight">
                 The New You
-              </h1>
+              </h2>
               <p className="mt-2 text-md text-gray-600">
                 Drag the slider to see your transformation.
               </p>
@@ -183,6 +194,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onModelFinalized }) => {
         </motion.div>
       )}
     </AnimatePresence>
+    </div>
   );
 };
 
