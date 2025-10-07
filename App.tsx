@@ -68,10 +68,11 @@ const App: React.FC = () => {
     [outfitHistory, currentOutfitIndex]
   );
   
-  const activeGarmentIds = useMemo(() => 
-    activeOutfitLayers.map(layer => layer.garment?.id).filter(Boolean) as string[], 
-    [activeOutfitLayers]
-  );
+  const activeGarmentIds = useMemo(() => {
+    // Only mark the most recent garment as active in the wardrobe
+    const lastLayer = activeOutfitLayers[activeOutfitLayers.length - 1];
+    return lastLayer?.garment?.id ? [lastLayer.garment.id] : [];
+  }, [activeOutfitLayers]);
   
   const displayImageUrl = useMemo(() => {
     if (outfitHistory.length === 0) return modelImageUrl;
@@ -178,7 +179,7 @@ const App: React.FC = () => {
 
     // Pose doesn't exist, so generate it.
     // Use an existing image from the current layer as the base.
-    const baseImageForPoseChange = Object.values(currentLayer.poseImages)[0];
+    const baseImageForPoseChange = Object.values(currentLayer.poseImages)[0] as string | undefined;
     if (!baseImageForPoseChange) return; // Should not happen
 
     setError(null);
@@ -239,7 +240,7 @@ const App: React.FC = () => {
             transition={{ duration: 0.5, ease: 'easeInOut' }}
           >
             <main className="flex-grow relative flex flex-col md:flex-row overflow-hidden">
-              <div className="w-full h-full flex-grow flex items-center justify-center bg-white pb-16 relative">
+              <div className="w-full h-full flex-grow flex items-center justify-center bg-white pb-20 md:pb-0 relative">
                 <Canvas 
                   displayImageUrl={displayImageUrl}
                   onStartOver={handleStartOver}
@@ -252,18 +253,58 @@ const App: React.FC = () => {
                 />
               </div>
 
-              <aside 
-                className={`absolute md:relative md:flex-shrink-0 bottom-0 right-0 h-auto md:h-full w-full md:w-1/3 md:max-w-sm bg-white/80 backdrop-blur-md flex flex-col border-t md:border-t-0 md:border-l border-gray-200/60 transition-transform duration-500 ease-in-out ${isSheetCollapsed ? 'translate-y-[calc(100%-4.5rem)]' : 'translate-y-0'} md:translate-y-0`}
-                style={{ transitionProperty: 'transform' }}
+              <motion.aside 
+                className={`absolute md:relative md:flex-shrink-0 bottom-0 right-0 h-auto max-h-[75vh] md:max-h-full md:h-full w-full md:w-1/3 md:max-w-sm bg-white/80 backdrop-blur-md flex flex-col border-t md:border-t-0 md:border-l border-gray-200/60 md:translate-y-0`}
+                animate={{
+                  y: isSheetCollapsed ? 'calc(100% - 4rem)' : 0
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 30,
+                  mass: 0.8
+                }}
               >
-                  <button 
+                  <motion.button 
                     onClick={() => setIsSheetCollapsed(!isSheetCollapsed)} 
-                    className="md:hidden w-full h-8 flex items-center justify-center bg-gray-100/50"
+                    className="md:hidden w-full h-16 flex flex-col items-center justify-center bg-gray-100/50 flex-shrink-0 gap-1"
                     aria-label={isSheetCollapsed ? 'Expand panel' : 'Collapse panel'}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    {isSheetCollapsed ? <ChevronUpIcon className="w-6 h-6 text-gray-500" /> : <ChevronDownIcon className="w-6 h-6 text-gray-500" />}
-                  </button>
-                  <div className="p-4 md:p-6 pb-20 overflow-y-auto flex-grow flex flex-col gap-8">
+                    <motion.div
+                      animate={{ 
+                        rotate: isSheetCollapsed ? 0 : 180,
+                        y: isSheetCollapsed ? [0, -4, 0] : 0
+                      }}
+                      transition={{ 
+                        rotate: { duration: 0.3, ease: "easeInOut" },
+                        y: {
+                          duration: 0.8,
+                          repeat: isSheetCollapsed ? Infinity : 0,
+                          ease: "easeInOut"
+                        }
+                      }}
+                    >
+                      {isSheetCollapsed ? <ChevronUpIcon className="w-6 h-6 text-gray-500" /> : <ChevronUpIcon className="w-6 h-6 text-gray-500" />}
+                    </motion.div>
+                    <motion.span 
+                      className="text-xs font-semibold text-violet-600"
+                      initial={false}
+                      animate={{ 
+                        opacity: isSheetCollapsed ? [0.7, 1, 0.7] : 1
+                      }}
+                      transition={{ 
+                        opacity: {
+                          duration: 1.5,
+                          repeat: isSheetCollapsed ? Infinity : 0,
+                          ease: "easeInOut"
+                        }
+                      }}
+                    >
+                      {isSheetCollapsed ? 'Explore More Outfits' : 'Close'}
+                    </motion.span>
+                  </motion.button>
+                  <div className="p-4 md:p-6 pb-6 md:pb-20 overflow-y-auto flex-grow flex flex-col gap-6 md:gap-8">
                     {error && (
                       <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-md" role="alert">
                         <p className="font-bold">Error</p>
@@ -281,7 +322,7 @@ const App: React.FC = () => {
                       wardrobe={wardrobe}
                     />
                   </div>
-              </aside>
+              </motion.aside>
             </main>
             <AnimatePresence>
               {isLoading && isMobile && (
@@ -301,6 +342,7 @@ const App: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      <div className="hidden md:block mb-6"/>
       <Footer isOnDressingScreen={!!modelImageUrl} />
     </div>
   );
