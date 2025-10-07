@@ -12,11 +12,13 @@ import OutfitStack from './components/OutfitStack';
 import Header from './components/Header';
 import { generateVirtualTryOnImage, generatePoseVariation } from './services/geminiService';
 import { OutfitLayer, WardrobeItem } from './types';
-import { ChevronDownIcon, ChevronUpIcon } from './components/icons';
+import { ChevronDownIcon, ChevronUpIcon, CoinIcon } from './components/icons';
 import { defaultWardrobe } from './wardrobe';
 import Footer from './components/Footer';
 import { getFriendlyErrorMessage } from './lib/utils';
 import Spinner from './components/Spinner';
+import { coinService } from './services/coinService';
+import CoinModal from './components/CoinModal';
 
 const POSE_INSTRUCTIONS = [
   "Full frontal view, hands on hips",
@@ -63,6 +65,8 @@ const App: React.FC = () => {
   const [isSheetCollapsed, setIsSheetCollapsed] = useState(false);
   const [wardrobe, setWardrobe] = useState<WardrobeItem[]>(defaultWardrobe);
   const isMobile = useMediaQuery('(max-width: 767px)');
+  const [showCoinModal, setShowCoinModal] = useState(false);
+  const [currentCoins, setCurrentCoins] = useState(coinService.getCoins());
 
   const activeOutfitLayers = useMemo(() => 
     outfitHistory.slice(0, currentOutfitIndex + 1), 
@@ -143,6 +147,7 @@ const App: React.FC = () => {
         return [...newHistory, newLayer];
       });
       setCurrentOutfitIndex(prev => prev + 1);
+      setCurrentCoins(coinService.getCoins());
       
       // Add to personal wardrobe if it's not already there
       setWardrobe(prev => {
@@ -152,6 +157,10 @@ const App: React.FC = () => {
         return [...prev, garmentInfo];
       });
     } catch (err) {
+      if ((err as Error).message === 'INSUFFICIENT_COINS') {
+        setCurrentCoins(coinService.getCoins());
+        setShowCoinModal(true);
+      }
       setError(getFriendlyErrorMessage(err, 'Failed to apply garment'));
     } finally {
       setIsLoading(false);
@@ -199,7 +208,12 @@ const App: React.FC = () => {
         updatedLayer.poseImages[poseInstruction] = newImageUrl;
         return newHistory;
       });
+      setCurrentCoins(coinService.getCoins());
     } catch (err) {
+      if ((err as Error).message === 'INSUFFICIENT_COINS') {
+        setCurrentCoins(coinService.getCoins());
+        setShowCoinModal(true);
+      }
       setError(getFriendlyErrorMessage(err, 'Failed to change pose'));
       // Revert pose index on failure
       setCurrentPoseIndex(prevPoseIndex);
@@ -217,6 +231,23 @@ const App: React.FC = () => {
 
   return (
     <div className="font-sans">
+      <CoinModal 
+        isOpen={showCoinModal} 
+        onClose={() => setShowCoinModal(false)} 
+        currentCoins={currentCoins}
+      />
+      {modelImageUrl && (
+        <button
+          onClick={() => setShowCoinModal(true)}
+          className="fixed top-6 right-6 md:top-8 md:right-8 z-50 flex items-center gap-2 px-2 py-1 bg-white/20 
+          backdrop-blur-md rounded-2xl shadow-2xl hover:shadow-3xl hover:scale-110 
+          transition-all cursor-pointer border border-white/30 hover:bg-white/30"
+          aria-label="View coins"
+        >
+          <CoinIcon className="w-7 h-7 md:w-8 md:h-8 drop-shadow-lg" />
+          <span className="text-lg md:text-xl font-bold text-gray-800 drop-shadow-sm">{currentCoins}</span>
+        </button>
+      )}
       <AnimatePresence mode="wait">
         {!modelImageUrl ? (
           <motion.div

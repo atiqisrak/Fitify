@@ -5,6 +5,8 @@
 import React, { useState } from 'react';
 import type { WardrobeItem } from '../types';
 import { UploadCloudIcon, CheckCircleIcon } from './icons';
+import { coinService } from '../services/coinService';
+import CoinModal from './CoinModal';
 
 interface WardrobePanelProps {
   onGarmentSelect: (garmentFile: File, garmentInfo: WardrobeItem) => void;
@@ -50,16 +52,31 @@ const urlToFile = (url: string, filename: string): Promise<File> => {
 
 const WardrobePanel: React.FC<WardrobePanelProps> = ({ onGarmentSelect, activeGarmentIds, isLoading, wardrobe }) => {
     const [error, setError] = useState<string | null>(null);
+    const [showCoinModal, setShowCoinModal] = useState(false);
+    const [currentCoins, setCurrentCoins] = useState(coinService.getCoins());
 
     const handleGarmentClick = async (item: WardrobeItem) => {
         if (isLoading || activeGarmentIds.includes(item.id)) return;
+        
+        if (!coinService.hasCoins()) {
+            setCurrentCoins(coinService.getCoins());
+            setShowCoinModal(true);
+            return;
+        }
+        
         setError(null);
         try {
             // If the item was from an upload, its URL is a blob URL. We need to fetch it to create a file.
             // If it was a default item, it's a regular URL. This handles both.
             const file = await urlToFile(item.url, item.name);
             onGarmentSelect(file, item);
+            setCurrentCoins(coinService.getCoins());
         } catch (err) {
+            if ((err as Error).message === 'INSUFFICIENT_COINS') {
+                setCurrentCoins(coinService.getCoins());
+                setShowCoinModal(true);
+                return;
+            }
             const detailedError = `Failed to load wardrobe item. This is often a CORS issue. Check the developer console for details.`;
             setError(detailedError);
             console.error(`[CORS Check] Failed to load and convert wardrobe item from URL: ${item.url}. The browser's console should have a specific CORS error message if that's the issue.`, err);
@@ -73,17 +90,32 @@ const WardrobePanel: React.FC<WardrobePanelProps> = ({ onGarmentSelect, activeGa
                 setError('Please select an image file.');
                 return;
             }
+            
+            if (!coinService.hasCoins()) {
+                setCurrentCoins(coinService.getCoins());
+                setShowCoinModal(true);
+                e.target.value = '';
+                return;
+            }
+            
             const customGarmentInfo: WardrobeItem = {
                 id: `custom-${Date.now()}`,
                 name: file.name,
                 url: URL.createObjectURL(file),
             };
             onGarmentSelect(file, customGarmentInfo);
+            setCurrentCoins(coinService.getCoins());
+            e.target.value = '';
         }
     };
 
   return (
     <div className="pt-4 md:pt-6 border-t border-gray-400/50">
+        <CoinModal 
+            isOpen={showCoinModal} 
+            onClose={() => setShowCoinModal(false)} 
+            currentCoins={currentCoins}
+        />
         <h2 className="text-lg md:text-xl font-serif tracking-wider text-gray-800 mb-2 md:mb-3">Wardrobe</h2>
         <div className="grid grid-cols-3 gap-2 md:gap-3">
         <label htmlFor="custom-garment-upload" className={`relative aspect-square border-2 border-dashed rounded-md md:rounded-lg flex flex-col items-center justify-center text-gray-500 transition-colors ${isLoading ? 'cursor-not-allowed bg-gray-100' : 'hover:border-gray-400 hover:text-gray-600 cursor-pointer'}`}>
