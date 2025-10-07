@@ -11,7 +11,7 @@ const Header: React.FC = () => {
       <div className="flex items-center gap-3">
           <ShirtIcon className="w-6 h-6 text-gray-700" />
           <h1 className="text-2xl font-serif tracking-widest text-gray-800">
-            Virtual Try-On
+            Fitify
           </h1>
       </div>
     </header>
