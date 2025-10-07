@@ -83,9 +83,14 @@ const WardrobePanel: React.FC<WardrobePanelProps> = ({ onGarmentSelect, activeGa
     };
 
   return (
-    <div className="pt-6 border-t border-gray-400/50">
-        <h2 className="text-xl font-serif tracking-wider text-gray-800 mb-3">Wardrobe</h2>
-        <div className="grid grid-cols-3 gap-3">
+    <div className="pt-4 md:pt-6 border-t border-gray-400/50">
+        <h2 className="text-lg md:text-xl font-serif tracking-wider text-gray-800 mb-2 md:mb-3">Wardrobe</h2>
+        <div className="grid grid-cols-3 gap-2 md:gap-3">
+        <label htmlFor="custom-garment-upload" className={`relative aspect-square border-2 border-dashed rounded-md md:rounded-lg flex flex-col items-center justify-center text-gray-500 transition-colors ${isLoading ? 'cursor-not-allowed bg-gray-100' : 'hover:border-gray-400 hover:text-gray-600 cursor-pointer'}`}>
+                <UploadCloudIcon className="w-5 h-5 md:w-6 md:h-6 mb-0.5 md:mb-1"/>
+                <span className="text-[10px] md:text-xs text-center">Upload</span>
+                <input id="custom-garment-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp, image/avif, image/heic, image/heif" onChange={handleFileChange} disabled={isLoading}/>
+            </label>
             {wardrobe.map((item) => {
             const isActive = activeGarmentIds.includes(item.id);
             return (
@@ -93,31 +98,27 @@ const WardrobePanel: React.FC<WardrobePanelProps> = ({ onGarmentSelect, activeGa
                 key={item.id}
                 onClick={() => handleGarmentClick(item)}
                 disabled={isLoading || isActive}
-                className="relative aspect-square border rounded-lg overflow-hidden transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 group disabled:opacity-60 disabled:cursor-not-allowed"
+                className="relative aspect-square border rounded-md md:rounded-lg overflow-hidden transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 group disabled:opacity-60 disabled:cursor-not-allowed"
                 aria-label={`Select ${item.name}`}
                 >
                 <img src={item.url} alt={item.name} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <p className="text-white text-xs font-bold text-center p-1">{item.name}</p>
+                    <p className="text-white text-[10px] md:text-xs font-bold text-center p-1">{item.name}</p>
                 </div>
                 {isActive && (
                     <div className="absolute inset-0 bg-gray-900/70 flex items-center justify-center">
-                        <CheckCircleIcon className="w-8 h-8 text-white" />
+                        <CheckCircleIcon className="w-6 h-6 md:w-8 md:h-8 text-white" />
                     </div>
                 )}
                 </button>
             );
             })}
-            <label htmlFor="custom-garment-upload" className={`relative aspect-square border-2 border-dashed rounded-lg flex flex-col items-center justify-center text-gray-500 transition-colors ${isLoading ? 'cursor-not-allowed bg-gray-100' : 'hover:border-gray-400 hover:text-gray-600 cursor-pointer'}`}>
-                <UploadCloudIcon className="w-6 h-6 mb-1"/>
-                <span className="text-xs text-center">Upload</span>
-                <input id="custom-garment-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp, image/avif, image/heic, image/heif" onChange={handleFileChange} disabled={isLoading}/>
-            </label>
+            
         </div>
         {wardrobe.length === 0 && (
-             <p className="text-center text-sm text-gray-500 mt-4">Your uploaded garments will appear here.</p>
+             <p className="text-center text-xs md:text-sm text-gray-500 mt-3 md:mt-4">Your uploaded garments will appear here.</p>
         )}
-        {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
+        {error && <p className="text-red-500 text-xs md:text-sm mt-3 md:mt-4">{error}</p>}
     </div>
   );
 };
