@@ -28,8 +28,10 @@ import { getFriendlyErrorMessage } from "./lib/utils";
 import Spinner from "./components/Spinner";
 import { coinService } from "./services/coinService";
 import CoinModal from "./components/CoinModal";
+import UserProfileModal from "./components/UserProfileModal";
 import { imageStorageService } from "./services/imageStorageService";
 import ImageGalleryModal from "./components/ImageGalleryModal";
+import { useUser } from "./contexts/UserContext";
 
 const POSE_INSTRUCTIONS = [
   "Full frontal view, hands on hips",
@@ -67,6 +69,7 @@ const useMediaQuery = (query: string): boolean => {
 };
 
 const App: React.FC = () => {
+  const { user, userStats, refreshUserStats } = useUser();
   const [modelImageUrl, setModelImageUrl] = useState<string | null>(null);
   const [originalUserImageUrl, setOriginalUserImageUrl] = useState<
     string | null
@@ -82,7 +85,7 @@ const App: React.FC = () => {
   const [wardrobe, setWardrobe] = useState<WardrobeItem[]>(defaultWardrobe);
   const isMobile = useMediaQuery("(max-width: 767px)");
   const [showCoinModal, setShowCoinModal] = useState(false);
-  const [currentCoins, setCurrentCoins] = useState(coinService.getCoins());
+  const [showUserModal, setShowUserModal] = useState(false);
   const [showGalleryModal, setShowGalleryModal] = useState(false);
 
   const activeOutfitLayers = useMemo(
@@ -147,8 +150,10 @@ const App: React.FC = () => {
   };
 
   const handleMagicTransform = async () => {
-    if (!originalUserImageUrl || isLoading || !coinService.hasCoins()) {
-      if (!coinService.hasCoins()) {
+    const hasCoins = (userStats?.current_coins || 0) > 0;
+
+    if (!originalUserImageUrl || isLoading || !hasCoins || !user) {
+      if (!hasCoins) {
         setShowCoinModal(true);
       }
       return;
@@ -166,6 +171,10 @@ const App: React.FC = () => {
 
       const transformedUrl = await generateModelImage(file);
 
+      // Deduct coin from backend
+      await coinService.deductCoin(user.id, "AI model transformation");
+      await refreshUserStats();
+
       // Store the transformation
       imageStorageService.storeImage({
         userImageUrl: originalUserImageUrl,
@@ -182,10 +191,9 @@ const App: React.FC = () => {
         },
       ]);
       setCurrentOutfitIndex(0);
-      setCurrentCoins(coinService.getCoins());
     } catch (err) {
       if ((err as Error).message === "INSUFFICIENT_COINS") {
-        setCurrentCoins(coinService.getCoins());
+        await refreshUserStats();
         setShowCoinModal(true);
       }
       setError(getFriendlyErrorMessage(err, "Failed to transform image"));
@@ -254,6 +262,12 @@ const App: React.FC = () => {
           garmentFile
         );
 
+        // Deduct coin from backend
+        if (user) {
+          await coinService.deductCoin(user.id, `Applied ${garmentInfo.name}`);
+          await refreshUserStats();
+        }
+
         // Store in cache
         imageStorageService.storeImage({
           userImageUrl: originalUserImageUrl || displayImageUrl,
@@ -274,7 +288,6 @@ const App: React.FC = () => {
           return [...newHistory, newLayer];
         });
         setCurrentOutfitIndex((prev) => prev + 1);
-        setCurrentCoins(coinService.getCoins());
 
         // Add to personal wardrobe if it's not already there
         setWardrobe((prev) => {
@@ -285,7 +298,7 @@ const App: React.FC = () => {
         });
       } catch (err) {
         if ((err as Error).message === "INSUFFICIENT_COINS") {
-          setCurrentCoins(coinService.getCoins());
+          await refreshUserStats();
           setShowCoinModal(true);
         }
         setError(getFriendlyErrorMessage(err, "Failed to apply garment"));
@@ -301,6 +314,8 @@ const App: React.FC = () => {
       outfitHistory,
       currentOutfitIndex,
       originalUserImageUrl,
+      user,
+      refreshUserStats,
     ]
   );
 
@@ -349,16 +364,22 @@ const App: React.FC = () => {
           baseImageForPoseChange,
           poseInstruction
         );
+
+        // Deduct coin from backend
+        if (user) {
+          await coinService.deductCoin(user.id, "Pose variation");
+          await refreshUserStats();
+        }
+
         setOutfitHistory((prevHistory) => {
           const newHistory = [...prevHistory];
           const updatedLayer = newHistory[currentOutfitIndex];
           updatedLayer.poseImages[poseInstruction] = newImageUrl;
           return newHistory;
         });
-        setCurrentCoins(coinService.getCoins());
       } catch (err) {
         if ((err as Error).message === "INSUFFICIENT_COINS") {
-          setCurrentCoins(coinService.getCoins());
+          await refreshUserStats();
           setShowCoinModal(true);
         }
         setError(getFriendlyErrorMessage(err, "Failed to change pose"));
@@ -369,7 +390,14 @@ const App: React.FC = () => {
         setLoadingMessage("");
       }
     },
-    [currentPoseIndex, outfitHistory, isLoading, currentOutfitIndex]
+    [
+      currentPoseIndex,
+      outfitHistory,
+      isLoading,
+      currentOutfitIndex,
+      user,
+      refreshUserStats,
+    ]
   );
 
   const viewVariants = {
@@ -383,7 +411,11 @@ const App: React.FC = () => {
       <CoinModal
         isOpen={showCoinModal}
         onClose={() => setShowCoinModal(false)}
-        currentCoins={currentCoins}
+        currentCoins={userStats?.current_coins || 0}
+      />
+      <UserProfileModal
+        isOpen={showUserModal}
+        onClose={() => setShowUserModal(false)}
       />
       <ImageGalleryModal
         isOpen={showGalleryModal}
@@ -391,53 +423,89 @@ const App: React.FC = () => {
         userImageUrl={originalUserImageUrl || undefined}
       />
       {modelImageUrl && (
-        <div className="fixed top-4 right-4 md:top-6 md:right-6 z-50 flex flex-col md:flex-row items-end md:items-center gap-2">
-          {/* Coins Display - First on mobile (top), Second on desktop (right) */}
-          <motion.button
-            onClick={() => setShowCoinModal(true)}
-            className="flex items-center gap-2 px-2 py-1 md:px-3 md:py-2 bg-white/20 backdrop-blur-md rounded-xl shadow-2xl hover:shadow-3xl hover:scale-110 transition-all border border-white/30 hover:bg-white/30 order-1 md:order-2"
-            aria-label="View coins"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            initial={{ x: 100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-          >
-            <CoinIcon className="w-6 h-6 md:w-7 md:h-7 drop-shadow-lg" />
-            <span className="text-base md:text-lg font-bold text-gray-800 drop-shadow-sm">
-              {currentCoins}
-            </span>
-          </motion.button>
-
-          {/* Gallery Button - Second on mobile (bottom), First on desktop (left) */}
-          <motion.button
-            onClick={() => setShowGalleryModal(true)}
-            className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-xl shadow-2xl hover:shadow-3xl hover:scale-110 transition-all order-2 md:order-1"
-            aria-label="View gallery"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            initial={{ x: 100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <svg
-              className="w-5 h-5 md:w-6 md:h-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+        <>
+          {/* User Profile Button - Top Left */}
+          {user && (
+            <motion.button
+              onClick={() => setShowUserModal(true)}
+              className="fixed top-4 left-4 md:top-6 md:left-6 z-50 flex items-center gap-2 px-3 py-2 bg-white/20 backdrop-blur-md rounded-xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all border border-white/30 hover:bg-white/30"
+              aria-label="View profile"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              initial={{ x: -100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.1 }}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            <span className="hidden sm:inline text-sm md:text-base">
-              Gallery
-            </span>
-          </motion.button>
-        </div>
+              <div className="w-8 h-8 bg-transparent to-purple-600 rounded-full flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 text-gray-800"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              </div>
+              <span className="text-sm md:text-base font-semibold text-gray-800 drop-shadow-sm hidden md:inline">
+                {user.name.split(" ")[0]}
+              </span>
+            </motion.button>
+          )}
+
+          {/* Top Right Buttons */}
+          <div className="fixed top-4 right-4 md:top-6 md:right-6 z-50 flex flex-col md:flex-row items-end md:items-center gap-2">
+            {/* Coins Display - First on mobile (top), Second on desktop (right) */}
+            <motion.button
+              onClick={() => setShowCoinModal(true)}
+              className="flex items-center gap-2 px-2 py-1 md:px-3 md:py-2 bg-white/20 backdrop-blur-md rounded-xl shadow-2xl hover:shadow-3xl hover:scale-110 transition-all border border-white/30 hover:bg-white/30 order-1 md:order-2"
+              aria-label="View coins"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              initial={{ x: 100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              <CoinIcon className="w-6 h-6 md:w-7 md:h-7 drop-shadow-lg" />
+              <span className="text-base md:text-lg font-bold text-gray-800 drop-shadow-sm">
+                {userStats?.current_coins || 0}
+              </span>
+            </motion.button>
+
+            {/* Gallery Button - Second on mobile (bottom), First on desktop (left) */}
+            <motion.button
+              onClick={() => setShowGalleryModal(true)}
+              className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-xl shadow-2xl hover:shadow-3xl hover:scale-110 transition-all order-2 md:order-1"
+              aria-label="View gallery"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              initial={{ x: 100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <svg
+                className="w-5 h-5 md:w-6 md:h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              <span className="hidden sm:inline text-sm md:text-base">
+                Gallery
+              </span>
+            </motion.button>
+          </div>
+        </>
       )}
       <AnimatePresence mode="wait">
         {!modelImageUrl ? (

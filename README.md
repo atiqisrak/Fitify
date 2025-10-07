@@ -44,6 +44,85 @@ No complicated setup. No app downloads. Just upload your photo and start trying 
 
 Visit our app and upload a clear photo of yourself. Within seconds, you'll have your personal digital model ready to try on any outfit in our collection. It's that simple.
 
+### For Developers
+
+#### Prerequisites
+
+- Node.js (v16 or higher)
+- pnpm package manager
+
+#### Setup Instructions
+
+1. **Clone the repository**
+
+   ```bash
+   git clone <repository-url>
+   cd Fitify
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   pnpm install
+   ```
+
+3. **Configure Environment Variables**
+
+   Copy the example environment file:
+
+   ```bash
+   cp env.example .env
+   ```
+
+   Update the `.env` file with your credentials:
+
+   ```env
+   VITE_ENGINE_URL=http://localhost:3001/api
+   VITE_GOOGLE_CLIENT_ID=your_actual_google_client_id
+   ```
+
+4. **Set up Google OAuth**
+
+   To enable Google Sign-In:
+
+   a. Go to [Google Cloud Console](https://console.cloud.google.com/)
+
+   b. Create a new project or select an existing one
+
+   c. Enable the Google+ API
+
+   d. Go to "Credentials" → "Create Credentials" → "OAuth client ID"
+
+   e. Select "Web application" as the application type
+
+   f. Add authorized JavaScript origins:
+
+   - `http://localhost:4323` (for development)
+   - Your production domain
+
+   g. Add authorized redirect URIs:
+
+   - `http://localhost:4323` (for development)
+   - Your production domain
+
+   h. Copy the Client ID and paste it into your `.env` file as `VITE_GOOGLE_CLIENT_ID`
+
+5. **Run the development server**
+
+   ```bash
+   pnpm dev
+   ```
+
+   The app will be available at `http://localhost:4323`
+
+#### Features
+
+- **Google OAuth Integration** - Users can sign in with their Google account for a seamless experience
+- **Traditional Registration** - Email/phone registration option available
+- **AI-Powered Virtual Try-On** - Powered by Google's Gemini AI
+- **Coin System** - Manage credits for AI transformations
+- **Image Gallery** - Save and view all your virtual try-on results
+
 ---
 
 **View in AI Studio:** https://ai.studio/apps/drive/1siOUL84nIdvUdPLhRd6w247ts96TrVBP
