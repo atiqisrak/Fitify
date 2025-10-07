@@ -101,8 +101,8 @@ const StartScreen: React.FC<StartScreenProps> = ({ onModelFinalized }) => {
           </div>
           <div className="w-full lg:w-1/2 flex flex-col items-center justify-center">
             <Compare
-              firstImage="https://raw.githubusercontent.com/atiqisrak/app-images/atiqisrak.png"
-              secondImage="https://raw.githubusercontent.com/atiqisrak/app-images/atiqisrak-transformed.png"
+              firstImage={`${import.meta.env.VITE_MEDIA_URL}atiqisrak.png`}
+              secondImage={`${import.meta.env.VITE_MEDIA_URL}atiq-transformed.png`}
               slideMode="drag"
               className="w-full max-w-sm aspect-[2/3] rounded-2xl bg-gray-200"
             />
