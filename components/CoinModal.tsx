@@ -214,13 +214,13 @@ const CoinModal: React.FC<CoinModalProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <button
+                  {/* <button
                     onClick={handleShare}
                     className="w-full px-4 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg text-sm flex items-center justify-center"
                   >
                     <ShareIcon className="w-4 h-4 md:w-5 md:h-5 mr-2" />
                     Share & Earn 2 Coins
-                  </button>
+                  </button> */}
                   <button
                     onClick={handleRecharge}
                     className="w-full px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-lg hover:from-violet-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg text-sm flex items-center justify-center"

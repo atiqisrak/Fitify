@@ -16,7 +16,15 @@ class CoinService {
 
   getCoins(): number {
     const stored = localStorage.getItem(this.COINS_KEY);
-    return stored ? parseInt(stored, 10) : 10; // Default 10 coins
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        return typeof parsed === 'object' && parsed.coins !== undefined ? parsed.coins : parseInt(stored, 10);
+      } catch {
+        return parseInt(stored, 10) || 10;
+      }
+    }
+    return 10; // Default 10 coins
   }
 
   hasCoins(): boolean {
@@ -24,7 +32,10 @@ class CoinService {
   }
 
   setCoins(amount: number): void {
-    localStorage.setItem(this.COINS_KEY, amount.toString());
+    localStorage.setItem(this.COINS_KEY, JSON.stringify({
+      coins: amount,
+      lastUpdated: Date.now()
+    }));
   }
 
   async getUserStats(userId: number) {

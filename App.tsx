@@ -32,6 +32,7 @@ import UserProfileModal from "./components/UserProfileModal";
 import { imageStorageService } from "./services/imageStorageService";
 import ImageGalleryModal from "./components/ImageGalleryModal";
 import { useUser } from "./contexts/UserContext";
+import RateLimitModal from "./components/RateLimitModal";
 
 const POSE_INSTRUCTIONS = [
   "Full frontal view, hands on hips",
@@ -87,6 +88,7 @@ const App: React.FC = () => {
   const [showCoinModal, setShowCoinModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
   const [showGalleryModal, setShowGalleryModal] = useState(false);
+  const [showRateLimitModal, setShowRateLimitModal] = useState(false);
 
   const activeOutfitLayers = useMemo(
     () => outfitHistory.slice(0, currentOutfitIndex + 1),
@@ -192,11 +194,14 @@ const App: React.FC = () => {
       ]);
       setCurrentOutfitIndex(0);
     } catch (err) {
-      if ((err as Error).message === "INSUFFICIENT_COINS") {
+      if ((err as Error).message === "RATE_LIMIT_EXCEEDED") {
+        setShowRateLimitModal(true);
+      } else if ((err as Error).message === "INSUFFICIENT_COINS") {
         await refreshUserStats();
         setShowCoinModal(true);
+      } else {
+        setError(getFriendlyErrorMessage(err, "Failed to transform image"));
       }
-      setError(getFriendlyErrorMessage(err, "Failed to transform image"));
     } finally {
       setIsLoading(false);
       setLoadingMessage("");
@@ -297,11 +302,14 @@ const App: React.FC = () => {
           return [...prev, garmentInfo];
         });
       } catch (err) {
-        if ((err as Error).message === "INSUFFICIENT_COINS") {
+        if ((err as Error).message === "RATE_LIMIT_EXCEEDED") {
+          setShowRateLimitModal(true);
+        } else if ((err as Error).message === "INSUFFICIENT_COINS") {
           await refreshUserStats();
           setShowCoinModal(true);
+        } else {
+          setError(getFriendlyErrorMessage(err, "Failed to apply garment"));
         }
-        setError(getFriendlyErrorMessage(err, "Failed to apply garment"));
       } finally {
         setIsLoading(false);
         setLoadingMessage("");
@@ -378,11 +386,14 @@ const App: React.FC = () => {
           return newHistory;
         });
       } catch (err) {
-        if ((err as Error).message === "INSUFFICIENT_COINS") {
+        if ((err as Error).message === "RATE_LIMIT_EXCEEDED") {
+          setShowRateLimitModal(true);
+        } else if ((err as Error).message === "INSUFFICIENT_COINS") {
           await refreshUserStats();
           setShowCoinModal(true);
+        } else {
+          setError(getFriendlyErrorMessage(err, "Failed to change pose"));
         }
-        setError(getFriendlyErrorMessage(err, "Failed to change pose"));
         // Revert pose index on failure
         setCurrentPoseIndex(prevPoseIndex);
       } finally {
@@ -412,6 +423,10 @@ const App: React.FC = () => {
         isOpen={showCoinModal}
         onClose={() => setShowCoinModal(false)}
         currentCoins={userStats?.current_coins || 0}
+      />
+      <RateLimitModal
+        isOpen={showRateLimitModal}
+        onClose={() => setShowRateLimitModal(false)}
       />
       <UserProfileModal
         isOpen={showUserModal}

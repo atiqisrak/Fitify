@@ -61,14 +61,21 @@ const model = 'gemini-2.5-flash-image';
 export const generateModelImage = async (userImage: File): Promise<string> => {
     const userImagePart = await fileToPart(userImage);
     const prompt = "You are an expert fashion photographer AI. Transform the person in this image into a full-body fashion model photo suitable for an e-commerce website. The background must be a clean, neutral studio backdrop (light gray, #f0f0f0). The person should have a neutral, professional model expression. Preserve the person's identity, unique features, and body type, but place them in a standard, relaxed standing model pose. The final image must be photorealistic. Return ONLY the final image.";
-    const response = await ai.models.generateContent({
-        model,
-        contents: { parts: [userImagePart, { text: prompt }] },
-        config: {
-            responseModalities: [Modality.IMAGE, Modality.TEXT],
-        },
-    });
-    return handleApiResponse(response);
+    try {
+        const response = await ai.models.generateContent({
+            model,
+            contents: { parts: [userImagePart, { text: prompt }] },
+            config: {
+                responseModalities: [Modality.IMAGE, Modality.TEXT],
+            },
+        });
+        return handleApiResponse(response);
+    } catch (error: any) {
+        if (error?.status === 429 || error?.message?.includes('429') || error?.message?.toLowerCase().includes('rate limit')) {
+            throw new Error('RATE_LIMIT_EXCEEDED');
+        }
+        throw error;
+    }
 };
 
 export const generateVirtualTryOnImage = async (modelImageUrl: string, garmentImage: File): Promise<string> => {
@@ -82,25 +89,39 @@ export const generateVirtualTryOnImage = async (modelImageUrl: string, garmentIm
 3.  **Preserve the Background:** The entire background from the 'model image' MUST be preserved perfectly.
 4.  **Apply the Garment:** Realistically fit the new garment onto the person. It should adapt to their pose with natural folds, shadows, and lighting consistent with the original scene.
 5.  **Output:** Return ONLY the final, edited image. Do not include any text.`;
-    const response = await ai.models.generateContent({
-        model,
-        contents: { parts: [modelImagePart, garmentImagePart, { text: prompt }] },
-        config: {
-            responseModalities: [Modality.IMAGE, Modality.TEXT],
-        },
-    });
-    return handleApiResponse(response);
+    try {
+        const response = await ai.models.generateContent({
+            model,
+            contents: { parts: [modelImagePart, garmentImagePart, { text: prompt }] },
+            config: {
+                responseModalities: [Modality.IMAGE, Modality.TEXT],
+            },
+        });
+        return handleApiResponse(response);
+    } catch (error: any) {
+        if (error?.status === 429 || error?.message?.includes('429') || error?.message?.toLowerCase().includes('rate limit')) {
+            throw new Error('RATE_LIMIT_EXCEEDED');
+        }
+        throw error;
+    }
 };
 
 export const generatePoseVariation = async (tryOnImageUrl: string, poseInstruction: string): Promise<string> => {
     const tryOnImagePart = dataUrlToPart(tryOnImageUrl);
     const prompt = `You are an expert fashion photographer AI. Take this image and regenerate it from a different perspective. The person, clothing, and background style must remain identical. The new perspective should be: "${poseInstruction}". Return ONLY the final image.`;
-    const response = await ai.models.generateContent({
-        model,
-        contents: { parts: [tryOnImagePart, { text: prompt }] },
-        config: {
-            responseModalities: [Modality.IMAGE, Modality.TEXT],
-        },
-    });
-    return handleApiResponse(response);
+    try {
+        const response = await ai.models.generateContent({
+            model,
+            contents: { parts: [tryOnImagePart, { text: prompt }] },
+            config: {
+                responseModalities: [Modality.IMAGE, Modality.TEXT],
+            },
+        });
+        return handleApiResponse(response);
+    } catch (error: any) {
+        if (error?.status === 429 || error?.message?.includes('429') || error?.message?.toLowerCase().includes('rate limit')) {
+            throw new Error('RATE_LIMIT_EXCEEDED');
+        }
+        throw error;
+    }
 };
