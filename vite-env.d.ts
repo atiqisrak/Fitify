@@ -2,6 +2,8 @@
 
 interface ImportMetaEnv {
   readonly VITE_MEDIA_URL: string;
+  readonly VITE_ENGINE_URL: string;
+  readonly VITE_GOOGLE_CLIENT_ID: string;
   // Add other env variables here as needed
 }
 
