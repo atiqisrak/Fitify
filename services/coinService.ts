@@ -12,6 +12,21 @@ export interface CoinTransaction {
 }
 
 class CoinService {
+  private readonly COINS_KEY = 'fitify_coins';
+
+  getCoins(): number {
+    const stored = localStorage.getItem(this.COINS_KEY);
+    return stored ? parseInt(stored, 10) : 10; // Default 10 coins
+  }
+
+  hasCoins(): boolean {
+    return this.getCoins() > 0;
+  }
+
+  setCoins(amount: number): void {
+    localStorage.setItem(this.COINS_KEY, amount.toString());
+  }
+
   async getUserStats(userId: number) {
     try {
       const response = await fetch(`${API_URL}/users/${userId}/stats`);
